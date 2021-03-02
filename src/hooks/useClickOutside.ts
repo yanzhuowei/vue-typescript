@@ -1,6 +1,12 @@
 import { ref, onMounted, onUnmounted, Ref } from 'vue'
 
-// 是否点击在某个元素外面
+/**
+ * @Author: [yanzhuowei]
+ * @description: 该函数判断是否点击在某个元素外面
+ * @param {Ref} elementRef
+ * @return {Ref} boolean
+ */
+
 const useClickOutside = (elementRef: Ref<null | HTMLElement>) => {
   const isClickOutside = ref(false)
   const handler = (e: MouseEvent) => {

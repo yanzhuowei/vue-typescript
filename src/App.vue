@@ -2,7 +2,7 @@
   <div class="container">
     <GlobalHeader :user="currentUser"></GlobalHeader>
     <ColumnList :list="list"></ColumnList>
-
+    <ValidateInput></ValidateInput>
   </div>
 </template>
 
@@ -11,6 +11,7 @@ import { defineComponent } from 'vue'
 import 'bootstrap/dist/css/bootstrap.min.css'
 import ColumnList, { ColumnProps } from '@/components/ColumnList.vue'
 import GlobalHeader, { UserProps } from '@/components/GlobalHeader.vue'
+import ValidateInput from '@/components/ValidateInput.vue'
 
 const testData: ColumnProps[] = [
   {
@@ -52,7 +53,8 @@ export default defineComponent({
   name: 'App',
   components: {
     ColumnList,
-    GlobalHeader
+    GlobalHeader,
+    ValidateInput
   },
   setup () {
     return {
@@ -71,5 +73,27 @@ export default defineComponent({
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
+}
+.el-row {
+  margin-bottom: 20px;
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+.el-col {
+  border-radius: 4px;
+}
+.bg-purple-dark {
+  background: #99a9bf;
+}
+.bg-purple {
+  background: #d3dce6;
+}
+.bg-purple-light {
+  background: #e5e9f2;
+}
+.grid-content {
+  border-radius: 4px;
+  min-height: 36px;
 }
 </style>
