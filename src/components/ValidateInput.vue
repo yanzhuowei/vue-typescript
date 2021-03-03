@@ -1,45 +1,83 @@
 <template>
-  <form action="">
-    <div class="mb-3">
-      <label for="exampleInputEmail1" class="form-label">邮箱地址</label>
-      <input type="text" class="form-control" id="exampleInputEmail1" v-model="emailRef.val" @blur="validateEmail">
-      <div class="form-text" v-if="emailRef.error">{{emailRef.message}}</div>
-    </div>
-    <div class="mb-3">
-      <label for="exampleInputPassword1" class="form-label">密码</label>
-      <input type="password" class="form-control" id="exampleInputPassword1">
-    </div>
-  </form>
+  <div class="validate-input-container pb-3">
+    <input v-if="tag !== 'textarea'" class="form-control" :class="{'is-invalid': inputRef.error}" @blur="validateInput"
+      v-model="inputRef.val" v-bind="$attrs">
+    <textarea v-else class="form-control" :class="{'is-invalid': inputRef.error}" @blur="validateInput"
+      v-model="inputRef.val" v-bind="$attrs">
+    </textarea>
+    <span v-if="inputRef.error" class="invalid-feedback">{{inputRef.message}}</span>
+  </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive } from 'vue'
+import { defineComponent, reactive, PropType, onMounted, computed } from 'vue'
+// 第三方事件监听器
+import { emitter } from './ValidateForm.vue'
 const emailReg = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
+// 写一个接口来对对象的形状进行描述
+interface RuleProp {
+  type: 'required' | 'email' | 'custom';
+  message: string;
+  validator?: () => boolean;
+}
+export type RulesProp = RuleProp[]
+export type TagType = 'input' | 'textarea'
 export default defineComponent({
-  name: 'ValidateInput',
-  setup () {
-    const emailRef = reactive({
-      val: '',
+  props: {
+    rules: Array as PropType<RulesProp>,
+    modelValue: String,
+    tag: {
+      type: String as PropType<TagType>,
+      default: 'input'
+    }
+  },
+  inheritAttrs: false,
+  setup (props, context) {
+    const inputRef = reactive({
+      val: computed({
+        get: () => props.modelValue || '',
+        set: (val) => {
+          context.emit('update:modelValue', val)
+        }
+      }),
       error: false,
       message: ''
     })
-    const validateEmail = () => {
-      if (emailRef.val.trim() === '') {
-        emailRef.error = true
-        emailRef.message = 'can not be empty'
-      } else if (!emailReg.test(emailRef.val)) {
-        emailRef.error = true
-        emailRef.message = 'should be valid email'
+    // input校验函数
+    const validateInput = () => {
+      if (props.rules) {
+        const allPassed = props.rules.every((rule) => {
+          let passed = true
+          inputRef.message = rule.message
+          switch (rule.type) {
+            case 'required':
+              passed = inputRef.val.trim() !== ''
+              break
+            case 'email':
+              passed = emailReg.test(inputRef.val)
+              break
+            case 'custom':
+              passed = rule.validator ? rule.validator() : true
+              break
+            default:
+              break
+          }
+          return passed
+        })
+        inputRef.error = !allPassed
+        return allPassed
       }
+      return true
     }
 
+    onMounted(() => {
+      // 向form组件发射检验函数
+      emitter.emit('form-item-created', validateInput)
+    })
     return {
-      emailRef,
-      validateEmail
+      inputRef,
+      validateInput
     }
   }
 })
 </script>
-
-<style lang="less" scoped>
-</style>
