@@ -11,5 +11,8 @@ export default defineComponent({
 })
 </script>
 
-<style lang="scss" scoped>
+<style>
+.w-330 {
+  max-width: 330px;
+}
 </style>
